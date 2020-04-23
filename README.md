@@ -41,7 +41,7 @@ AWS CloudFormation template creates the following resources in AWS account.
 5.	On the **Options page**, you can specify tags (key-value pairs) for resources in stack and Click on Next.
 6.	On the **Review page**, review and confirm the template settings. Under Capabilities, select the **check box to acknowledge** that the template will create IAM resources.
 
-![Checkbox]( https://github.com/1CloudHub/Azure-AKS/blob/master/AWS%20Images/capture-1.png )
+![Checkbox]( https://github.com/1CloudHub/Azure-AKS/blob/master/AWS%20Images/capture-2.png )
 
 7.	Click on **Create** to deploy the stack
 
