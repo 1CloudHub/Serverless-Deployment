@@ -125,7 +125,7 @@ Resources:
       Command:
         Name: glueetl
         PythonVersion: 3
-        ScriptLocation: !Sub "s3://${ScriptBucketName}/glue-test-script.py"
+        ScriptLocation: !Sub "s3://${ScriptBucketName}/glue-script.py"
       DefaultArguments:
         "--job-bookmark-option" : "job-bookmark-disable"
         "--temp_bucket": !Ref "RawBucket"
