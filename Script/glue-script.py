@@ -48,10 +48,7 @@ path = 's3://' + str(bucket_name) + "/" + str(database_name) + "/" + str(table_n
 print('Path is: ', path)
 
 # Read Data from database using JDBC driver in to DataFrame
-source_df = spark.read.format("jdbc").option("url", url).option("dbtable", db_table_name).option("driver",
-                                                                                                 driver).option("user",
-                                                                                                                username).option(
-    "password", password).load()
+source_df = spark.read.format("jdbc").option("url", url).option("dbtable", db_table_name).option("driver", driver).option("user", username).option("password", password).load()
 
 job.init(args['JOB_NAME'], args)
 
