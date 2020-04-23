@@ -1,0 +1,150 @@
+--- 
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  RawBucket: 
+    Description: "Name of the Bucket to land the Raw data."
+    Type: String
+  ScriptBucketName:
+    Description: "Name of the S3 bucket, where glue script uploaded"
+    Type: String
+  ConnectionName: 
+    Description: "Glue Connection Name."
+    Type: String
+  GlueAZ:
+    ConstraintDescription: "Must be AWS Availbility Zone for Glue Connection"
+    Default: "ap-south-1a"
+    Type: String
+  SecurityGroupID:
+    AllowedPattern: "^[a-zA-Z0-9_-]*$"
+    Description: "Security Group ID for Glue Connection"
+    Default: ""
+    Type: String
+  Subnet:
+    AllowedPattern: "^[a-zA-Z0-9_-]*$"
+    ConstraintDescription: "Subnet ID for Glue Connection. Must be Private Subnet"
+    Default: ""
+    Type: String  
+  JDBCString: 
+    Default: "jdbc:mysql://hostip:3306/dbname"
+    Type: String
+  DBUser: 
+    Description: "Username for the source DB."
+    Type: String
+  DBPassword: 
+    Description: "Password for the source DB."
+    NoEcho: true
+    Type: String
+  DBName: 
+    Description: "Source Database Name."
+    Type: String
+  TableName:
+    Description: "Source Table Name."
+    Type: String
+  CrawlerSchedule: 
+    Default: "cron(30 0 * * ? *)"
+    Description: "Crawler Execution Schedule Cron Expression. Default is daily at 12:30 AM GMT: https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html"
+    Type: String
+  LakeDBName: 
+    Description: "Name to be used in analytical tools such as Athena and Redshift to reference these tables within the data lake."
+    Type: String
+  PartitionKeys: 
+    Description: "Provide column names for the partitions separated by comma (eg.'column1,column2')."
+    Type: String
+Resources:  
+  RawBucket1:
+    Type: "AWS::S3::Bucket"  
+    Properties: 
+      BucketName: 
+        Ref: RawBucket
+  ConnectionMySQL:
+    Type: AWS::Glue::Connection
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      ConnectionInput: 
+        Description: "Connect to MySQL database."
+        ConnectionType: "JDBC"
+        #MatchCriteria: none		
+        PhysicalConnectionRequirements:
+          AvailabilityZone: !Ref GlueAZ
+          SecurityGroupIdList: 
+            - !Ref SecurityGroupID
+          SubnetId: !Ref Subnet
+        ConnectionProperties: {
+          "JDBC_CONNECTION_URL": !Ref JDBCString,
+          "USERNAME": !Ref DBUser,
+          "PASSWORD": !Ref DBPassword
+        }
+        Name: !Ref ConnectionName
+  ExecutionRole:
+    Type: "AWS::IAM::Role"  
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - glue.amazonaws.com
+                - s3.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+        - arn:aws:iam::aws:policy/CloudWatchFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Path: "/" 
+  GlueCrawler:  
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/Glue_Execution_Role'
+      Schedule:
+        ScheduleExpression:
+          Ref: CrawlerSchedule
+      DatabaseName:
+        Ref: LakeDBName
+      Targets:
+        S3Targets:
+          -
+            Path:
+              Fn::Join :
+                - "/"
+                -
+                  - Ref : RawBucket
+                  - Ref : DBName
+                  - Ref : TableName
+
+  GlueJobController: 
+    Type: AWS::Glue::Job
+    Properties:
+      Name: Glue_Controller
+      Role:
+        Fn::GetAtt: [ExecutionRole, Arn]
+      MaxCapacity: 2
+      ExecutionProperty:
+        MaxConcurrentRuns: 2
+      Command:
+        Name: glueetl
+        PythonVersion: 3
+        ScriptLocation: !Sub "s3://${ScriptBucketName}/glue-test-script.py"
+      DefaultArguments:
+        "--job-bookmark-option" : "job-bookmark-disable"
+        "--temp_bucket": !Ref "RawBucket"
+  Trigger:
+    Type: AWS::Glue::Trigger
+    Properties:
+      Type: ON_DEMAND
+      Name: !Sub
+        - "Glue-Trigger-${dbname}"
+        - {dbname: !Ref LakeDBName}
+      Actions:
+        - JobName: Glue_Controller
+          Arguments:
+            '--url': !Ref JDBCString
+            '--bucket_name': !Ref RawBucket
+            '--database_name': !Ref DBName
+            '--table_name' : !Ref TableName
+            '--driver' : com.mysql.jdbc.Driver
+            '--username' : !Ref DBUser
+            '--password' : !Ref DBPassword
+            '--partition_Keys' : !Ref PartitionKeys
+            
