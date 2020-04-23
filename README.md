@@ -2,10 +2,10 @@
 
 AWS CloudFormation template creates the following resources in AWS account.
 
-•	Amazon S3 bucket to store the raw data
-•	Glue Connection to connect source database
-•	Glue Crawler and Glue Jobs
-•	IAM roles for accessing AWS Glue and Amazon S3
+- Amazon S3 bucket to store the raw data
+- Glue Connection to connect source database
+- Glue Crawler and Glue Jobs
+- IAM roles for accessing AWS Glue and Amazon S3
 
 
 #### Deployment Steps:
@@ -13,7 +13,7 @@ AWS CloudFormation template creates the following resources in AWS account.
 2.	Navigate to **CloudFormation** and create new stack.
 3.	In Specify **template**, Upload the template file.
 
-[![template]( https://github.com/1CloudHub/Azure-AKS/blob/master/AWS%20Images/capture-1.png )]()
+[![template]( https://github.com/1CloudHub/Azure-AKS/blob/master/AWS%20Images/capture-1.png )]
 
 
 4.	On the **Specify Details** page, Enter Stack name. Review the parameters of the template and provide the required values.
@@ -22,13 +22,11 @@ AWS CloudFormation template creates the following resources in AWS account.
 
 |  Parameter Name | Default   | Description  |
 | ------------------- | ---------- | ------------- |
-|  RawBucket | Requires Input  | Name of the Bucket to Store the Raw data. Note: Provide Unique name for S3 bucket
-   |
+|  RawBucket | Requires Input  | Name of the Bucket to Store the Raw data. Note: Provide Unique name for S3 bucket|
 |  ScriptBucketName | Requires Input  | Name of the S3 bucket name, where script has been uploaded.   |
 |  ConnectionName |  Requires Input | Glue Connection Name  |
 | GlueAZ  | ap-south-1a   | Must be AWS Availbility Zone for Glue Connection   |
-|SecurityGroupID|Requires Input|Security Group ID for Glue Connection. Security group created in VPC and correct region.
-|
+|SecurityGroupID|Requires Input|Security Group ID for Glue Connection. Security group created in VPC and correct region.|
 |Subnet|Requires Input|Subnet ID for Glue Connection. Must be Private Subnet.|
 |JDBCString|Requires Input|Database Connection String. Connection URL.|
 |DBUser|Requires Input|Username for the source DB|
