@@ -2,7 +2,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   RawBucket: 
-    Description: "Name of the Bucket to land the Raw data."
+    Description: "Name of the Bucket to store the Raw data."
     Type: String
   ScriptBucketName:
     Description: "Name of the S3 bucket, where glue script uploaded"
