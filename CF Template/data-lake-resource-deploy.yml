@@ -78,6 +78,7 @@ Resources:
   ExecutionRole:
     Type: "AWS::IAM::Role"  
     Properties:
+      RoleName: Glue_Execution_Role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
